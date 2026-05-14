@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test Case XLSX Generator"
+  short_description: "Generate categorized QA test cases and export them to Excel."
+  default_prompt: "Use $test-case-xlsx-generator to generate categorized QA test cases from this PRD, screenshot, or feature description, then save the workbook to my chosen Windows folder."
