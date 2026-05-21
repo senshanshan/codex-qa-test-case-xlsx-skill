@@ -8,21 +8,31 @@ Generate structured QA test cases from PRDs, screenshots, wireframes, or plain f
 
 This repository contains a Codex skill plus a Python exporter script. It is designed for teams that want a repeatable workflow for turning requirement input into Excel-based test case deliverables.
 
+## Version Notes
+
+版本变更记录请参考 [版本介绍.md](./版本介绍.md)。
+
+For release history and version-to-version changes, see [版本介绍.md](./版本介绍.md).
+
 ## What This Skill Does
 
 - 将 PRD、截图、线框图或混合输入转换为结构化测试用例
 - 在展开详细用例前先构建覆盖地图
 - 按 `功能用例`、`表单校验`、`边界值`、`异常场景`、`界面交互`、`权限安全` 等分类整理用例
+- 当需求中存在明确约束时，按系统化边界值策略生成测试点，而不只是笼统地测“特殊值”
 - 用 `待确认项` 显式记录不确定信息
 - 导出为格式化的 Excel 工作簿
 - 默认输出到当前工作目录，并避免覆盖已有文件
+- 如需执行版工作簿，可通过 `extra_columns` 追加 `实际结果` 等列，而不是修改默认列结构
 
 - Turn PRDs, screenshots, wireframes, or mixed inputs into structured test cases
 - Build a coverage map before writing detailed cases
 - Classify cases into categories such as `功能用例`, `表单校验`, `边界值`, `异常场景`, `界面交互`, and `权限安全`
+- When explicit constraints exist, generate boundary cases systematically instead of only checking vague "special values"
 - Track uncertainty explicitly with `待确认项`
 - Export the final result to a formatted Excel workbook
 - Default to the current working directory and avoid accidental overwrites
+- Keep execution-oriented columns such as `实际结果` optional through `extra_columns` instead of changing the default schema
 
 ## Repository Structure
 
@@ -31,6 +41,9 @@ This repository contains a Codex skill plus a Python exporter script. It is desi
 ├── SKILL.md
 ├── agents/
 │   └── openai.yaml
+├── examples/
+│   ├── execution-template-example.md
+│   └── sample-prompt.md
 ├── references/
 │   ├── classification-rules.md
 │   ├── input-contract.md
@@ -60,15 +73,17 @@ Use this skill when you want Codex to:
 1. 阅读输入内容，只提取有明确证据支持的信息。
 2. 先构建覆盖地图，再写详细用例。
 3. 生成高置信度测试用例。
-4. 将缺失或模糊需求标记为 `待确认项`。
-5. 导出为 `.xlsx`。
+4. 如存在明确限制条件，按系统化边界值策略补充测试点。
+5. 将缺失或模糊需求标记为 `待确认项`。
+6. 导出为 `.xlsx`。
    如未指定输出目录，则默认输出到当前工作目录。
 
 1. Read the input and identify only what is directly supported by the evidence.
 2. Build a coverage map before writing detailed rows.
 3. Generate high-confidence test cases.
-4. Mark missing or ambiguous requirements as `待确认项`.
-5. Export the result to `.xlsx`.
+4. When explicit limits exist, cover boundary values systematically.
+5. Mark missing or ambiguous requirements as `待确认项`.
+6. Export the result to `.xlsx`.
    If no output directory is provided, export to the current working directory.
 
 ## Output Format
@@ -85,7 +100,11 @@ The default workbook uses Chinese sheet names and columns:
 
 你也可以通过 prompt 参数扩展额外分类或字段列。
 
+如果你希望把生成结果直接当执行单使用，建议通过 `extra_columns` 追加 `实际结果`、`执行人`、`执行日期`、`是否通过` 等字段，而不是直接修改默认列。
+
 You can extend the workbook with additional categories or extra columns through prompt parameters.
+
+If you want an execution-ready workbook, add columns such as `实际结果`, `执行人`, `执行日期`, and `是否通过` through `extra_columns` instead of changing the default columns.
 
 ## Install
 
@@ -126,6 +145,10 @@ If you do not pass `output_dir`, the generated workbook will be saved in the cur
 ```text
 Use $test-case-xlsx-generator to generate categorized QA test cases from this PRD and these screenshots. Focus on login and password reset. Save the workbook to C:\Users\me\Documents\TestCases.
 ```
+
+如果你想要更贴近团队执行习惯的模板示例，请参考 [examples/execution-template-example.md](./examples/execution-template-example.md)。
+
+If you want a more execution-oriented example, see [examples/execution-template-example.md](./examples/execution-template-example.md).
 
 ## Export Script
 
@@ -190,11 +213,13 @@ See [references/input-contract.md](./references/input-contract.md) and [referenc
 ## Design Principles
 
 - 优先基于证据生成用例，而不是做推测性覆盖
+- 对明确存在的边界规则，优先做系统化边界覆盖，而不是只补一个“异常值”
 - 让不确定信息可见，而不是隐藏起来
 - 保持流程稳定、可复用
 - 优先优化 Excel 交付效果，而不只是文本输出
 
 - Prefer evidence-based cases over speculative coverage
+- For explicit limit rules, prefer systematic boundary coverage instead of a single vague "invalid value" case
 - Make uncertainty visible instead of hiding it
 - Keep the workflow stable and reusable
 - Optimize for practical Excel delivery, not just raw text output

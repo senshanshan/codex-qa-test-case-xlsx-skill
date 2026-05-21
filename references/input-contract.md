@@ -37,7 +37,7 @@ The skill should still work with mixed input.
 - `file_name`
   Full workbook file name, including `.xlsx` when provided
 - `extra_columns`
-  Additional column names, such as `需求编号` or `是否自动化`
+  Additional column names, such as `需求编号`, `实际结果`, or `是否自动化`
 - `extra_categories`
   Additional case categories beyond the default set
 - `output_format`
@@ -55,6 +55,7 @@ The skill should still work with mixed input.
 - If `module_name` is missing, use a generic workbook name
 - If `extra_columns` is missing, use the default columns only
 - If `extra_categories` is missing, use the default categories only
+- If the user wants an execution-ready workbook, keep the default columns and append execution-oriented fields through `extra_columns`
 
 ## Incomplete Information Rules
 

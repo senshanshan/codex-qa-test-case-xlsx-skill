@@ -62,6 +62,7 @@ Coverage map goals:
 - Identify the main flows worth testing
 - Identify the controls and states visible in the input
 - Identify likely validation points
+- Identify explicit boundaries such as min/max length, numeric ranges, thresholds, required fields, and selectable states
 - Identify missing information that should remain unconfirmed
 
 ### 3. Generate Cases from the Coverage Map
@@ -89,6 +90,10 @@ Generation rules:
 - Avoid duplicate cases with only wording differences
 - Use the visible page structure when working from screenshots
 - Use explicit PRD rules when working from documents
+- When the input defines a length, range, threshold, count, or enumeration rule, generate boundary cases systematically instead of only using a vague "special value" case
+- Default boundary coverage should include: one normal valid value, the minimum valid value, minimum minus one when meaningful, the maximum valid value, maximum plus one when meaningful, and empty value when applicable
+- If the exact boundary is not stated, do not invent a number. Keep the related point in `待确认项` and only generate high-confidence cases supported by the evidence
+- Keep execution-oriented columns such as `实际结果` optional through `extra_columns` unless the user explicitly asks for an execution-ready workbook
 - Mark uncertain assumptions in `备注` or in the summary sheet
 
 ### 4. Handle Uncertainty Explicitly
@@ -135,6 +140,7 @@ Before finishing:
 - Confirm the file name
 - Confirm the sheet split matches the case categories
 - Confirm required columns are present
+- Confirm any requested execution-oriented columns such as `实际结果` were appended correctly
 - Confirm there are no obviously empty critical fields
 - Confirm uncertain items are called out rather than hidden
 

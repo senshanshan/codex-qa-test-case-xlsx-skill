@@ -28,6 +28,21 @@ Additional sheets may be added for prompt-defined categories.
 
 Append prompt-defined extra columns after the default columns.
 
+## Execution-Oriented Optional Columns
+
+The default workbook stays focused on test case design, not execution records.
+
+If the user wants an execution-ready workbook, recommend adding extra columns such as:
+
+- `实际结果`
+- `执行人`
+- `执行日期`
+- `是否通过`
+- `需求编号`
+- `是否自动化`
+
+These columns should usually be passed through `extra_columns` instead of being added to the default schema.
+
 ## Summary Sheet
 
 The `说明` sheet should include:
@@ -85,3 +100,4 @@ Each case should be a JSON object keyed by column name.
 - Keep sheet names concise so they remain valid in Excel after sanitization
 - Preserve the category order from the generated payload when possible
 - Use `备注` for assumptions that should remain visible to reviewers
+- If execution-oriented columns are requested, append them after the default columns so the base schema remains stable across teams

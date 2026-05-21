@@ -9,7 +9,30 @@
   Use for required-field checks, format checks, prompt behavior, and submit-blocking logic.
 
 - `边界值`
-  Use for min/max length, value thresholds, empty combinations, and limit-related input behavior.
+  Use for min/max length, numeric ranges, quantity limits, value thresholds, empty combinations, and other limit-related input behavior that is explicitly visible in the input or stated in the PRD.
+
+## Default Boundary Strategy
+
+When a boundary rule is explicit, do not stop at a generic "special value" case. Prefer a small but systematic set of cases.
+
+Recommended default coverage:
+
+- One normal valid value inside the accepted range
+- Minimum valid value
+- Minimum minus one when meaningful
+- Maximum valid value
+- Maximum plus one when meaningful
+- Empty value when the field can be left blank or when required/optional behavior matters
+
+Apply the same idea to non-length boundaries:
+
+- Numeric thresholds
+- Quantity limits
+- Date ranges
+- Upload count limits
+- Selectable option counts
+
+If the exact boundary is not stated, do not invent a number. Keep the uncertainty visible in `待确认项`.
 
 - `异常场景`
   Use for invalid input, failed submission, error prompts, broken flow handling, or graceful fallback expectations.
@@ -42,9 +65,10 @@ Keep categories practical. Do not create tiny one-case categories unless the use
 
 When only screenshots are available:
 
-- Prefer `界面交互`, `表单校验`, and visible `功能用例`
+- Prefer `界面交互`, `表单校验`, visible `功能用例`, and only evidence-backed `边界值`
 - Use `权限安全` only when there is visible evidence, such as a password mask or a restricted entry element
 - Treat hidden backend assumptions as out of scope
+- If the UI implies a constraint but does not reveal the exact limit, note it in `待确认项` instead of fabricating the boundary
 
 ## PRD-Specific Guidance
 
