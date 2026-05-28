@@ -1,0 +1,42 @@
+{
+  "schema_version": "v2.1",
+  "system_name": "",
+  "module_name": "",
+  "source_name": "",
+  "input_summary": "",
+  "generated_at": "",
+  "output_format": "xlsx",
+  "file_name": "",
+  "output_dir": "",
+  "revision": 0,
+  "based_on": "",
+  "extra_columns": [],
+  "extra_categories": [],
+  "uncertainties": [],
+  "categories": [
+    {
+      "name": "功能用例",
+      "cases": []
+    },
+    {
+      "name": "表单校验",
+      "cases": []
+    },
+    {
+      "name": "边界值",
+      "cases": []
+    },
+    {
+      "name": "异常场景",
+      "cases": []
+    },
+    {
+      "name": "界面交互",
+      "cases": []
+    },
+    {
+      "name": "权限安全",
+      "cases": []
+    }
+  ]
+}

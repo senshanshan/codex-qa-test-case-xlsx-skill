@@ -1,6 +1,6 @@
 # Input Contract
 
-## Required Input
+## First Generate Required Input
 
 Provide at least one of:
 
@@ -10,6 +10,20 @@ Provide at least one of:
 - `feature_description`
 
 The skill should still work with mixed input.
+
+## Incremental Update Required Input
+
+Provide requirement-change evidence as one or more of:
+
+- changed PRD text
+- screenshot
+- feature-change description
+- document excerpt
+
+The workspace should already contain:
+
+- a baseline workbook
+- a baseline payload JSON
 
 ## Recommended Prompt Parameters
 
@@ -43,9 +57,22 @@ The skill should still work with mixed input.
 - `output_format`
   Default is `xlsx`; other formats are optional future extensions
 - `template_path`
-  Optional workbook template path for future customization
+  Optional payload template path for future customization
 - `test_focus`
   Priority direction such as `表单校验优先`
+
+## First Generate Rules
+
+- Start from `templates/base_payload.json`
+- Fill metadata first, then fill categories and cases
+- Save both workbook and payload JSON together
+
+## Incremental Update Rules
+
+- Use the latest matching workbook + payload JSON pair as the baseline unless the user explicitly points to another pair
+- Never overwrite the old baseline files
+- Create a new payload revision first
+- Export a new workbook from the new payload revision
 
 ## Fallback Rules
 
@@ -59,13 +86,14 @@ The skill should still work with mixed input.
 
 ## Incomplete Information Rules
 
-- Continue with high-confidence case generation
+- Continue with high-confidence case generation or updates
 - Record unclear areas as `待确认项`
 - Do not invent hidden business rules or role logic
+- If incremental matching is weak, leave the uncertainty visible instead of forcing a broad rewrite
 
 ## Implementation Notes
 
 - Keep the payload schema simple and JSON-friendly so it can be passed to `scripts/export_test_cases.py`
 - Prefer Chinese workbook field names unless the user explicitly asks for another schema
-- If the input mixes PRD text and screenshots, combine them into a single coverage map before exporting
 - Treat the current working directory as the default export location for open-source portability
+- Keep `_meta` fields in the payload JSON only; they are for agent matching, not for workbook display

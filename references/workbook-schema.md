@@ -28,6 +28,17 @@ Additional sheets may be added for prompt-defined categories.
 
 Append prompt-defined extra columns after the default columns.
 
+## Payload-Only Internal Metadata
+
+The payload JSON may contain case-level internal metadata under `_meta`, for example:
+
+- `_meta.source_requirement`
+- `_meta.keywords`
+
+These fields exist to help later incremental updates match impacted cases more accurately.
+
+Do not show `_meta` fields in the exported workbook.
+
 ## Execution-Oriented Optional Columns
 
 The default workbook stays focused on test case design, not execution records.
@@ -65,7 +76,7 @@ Priority order:
 3. `{module_name}_测试用例_{YYYY-MM-DD}.xlsx`
 4. `测试用例_{YYYY-MM-DD}.xlsx`
 
-If the target file already exists, append `_01`, `_02`, and so on.
+For later revisions, append `_01`, `_02`, and so on to both workbook and payload file names.
 
 ## Formatting Expectations
 
@@ -88,12 +99,24 @@ The export script expects a JSON object with:
 - `extra_columns`
 - `categories`
 
+The payload may also contain metadata such as:
+
+- `schema_version`
+- `source_name`
+- `file_name`
+- `output_dir`
+- `revision`
+- `based_on`
+- `extra_categories`
+
+These metadata fields support workflow stability and future incremental updates, but do not need to appear in the workbook.
+
 Each category item should contain:
 
 - `name`
 - `cases`
 
-Each case should be a JSON object keyed by column name.
+Each case should be a JSON object keyed by workbook column name, and may optionally include `_meta`.
 
 ## Practical Notes
 

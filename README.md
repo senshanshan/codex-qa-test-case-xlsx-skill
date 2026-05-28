@@ -1,40 +1,36 @@
 # Test Case XLSX Generator
 
-从 PRD、截图、线框图或纯文本需求生成结构化测试用例，并导出为分类清晰的 `.xlsx` 工作簿。
+基于 PRD、截图、线框图或纯文字需求生成结构化 QA 测试用例，并导出为分类 `.xlsx` 工作簿。
 
 Generate structured QA test cases from PRDs, screenshots, wireframes, or plain feature descriptions, then export them to categorized `.xlsx` workbooks.
 
-这个仓库包含一个 Codex skill 和一个 Python 导出脚本，适合希望把需求输入稳定转换为 Excel 测试用例交付物的团队。
+## 简介 | Overview
 
-This repository contains a Codex skill plus a Python exporter script. It is designed for teams that want a repeatable workflow for turning requirement input into Excel-based test case deliverables.
+这个仓库包含一个 Codex skill 和配套 Python 脚本，支持两类核心场景：
 
-## Version Notes
+- 首次根据需求生成 Excel 测试用例
+- 当需求变更时，基于已有 workbook 和 payload JSON 做版本化修改
 
-版本变更记录请参考 [版本介绍.md](./版本介绍.md)。
+This repository contains a Codex skill plus Python scripts for two core workflows:
 
-For release history and version-to-version changes, see [版本介绍.md](./版本介绍.md).
+- first-time generation of Excel test cases from requirements
+- revision-based updates when requirements change and an existing workbook plus payload JSON already exists
 
-## What This Skill Does
+## 能力说明 | What This Skill Does
 
-- 将 PRD、截图、线框图或混合输入转换为结构化测试用例
+- 将 PRD、截图、线框图或混合输入转为结构化测试用例
 - 在展开详细用例前先构建覆盖地图
-- 按 `功能用例`、`表单校验`、`边界值`、`异常场景`、`界面交互`、`权限安全` 等分类整理用例
-- 当需求中存在明确约束时，按系统化边界值策略生成测试点，而不只是笼统地测“特殊值”
-- 用 `待确认项` 显式记录不确定信息
-- 导出为格式化的 Excel 工作簿
-- 默认输出到当前工作目录，并避免覆盖已有文件
-- 如需执行版工作簿，可通过 `extra_columns` 追加 `实际结果` 等列，而不是修改默认列结构
+- 导出格式化 Excel 测试用例工作簿
+- 在 workbook 旁边保留结构化 `payload.json`，方便后续修改
+- 基于旧 `payload.json + workbook` 进行增量修订，而不是每次从零重建
 
 - Turn PRDs, screenshots, wireframes, or mixed inputs into structured test cases
 - Build a coverage map before writing detailed cases
-- Classify cases into categories such as `功能用例`, `表单校验`, `边界值`, `异常场景`, `界面交互`, and `权限安全`
-- When explicit constraints exist, generate boundary cases systematically instead of only checking vague "special values"
-- Track uncertainty explicitly with `待确认项`
 - Export the final result to a formatted Excel workbook
-- Default to the current working directory and avoid accidental overwrites
-- Keep execution-oriented columns such as `实际结果` optional through `extra_columns` instead of changing the default schema
+- Save a structured `payload.json` beside the workbook for later updates
+- Reuse the old payload JSON plus workbook to revise cases instead of fully starting over
 
-## Repository Structure
+## 仓库结构 | Repository Structure
 
 ```text
 .
@@ -43,193 +39,86 @@ For release history and version-to-version changes, see [版本介绍.md](./版�
 │   └── openai.yaml
 ├── examples/
 │   ├── execution-template-example.md
+│   ├── incremental-update-example.md
 │   └── sample-prompt.md
 ├── references/
 │   ├── classification-rules.md
+│   ├── incremental-update-workflow.md
 │   ├── input-contract.md
 │   └── workbook-schema.md
-└── scripts/
-    └── export_test_cases.py
+├── scripts/
+│   ├── export_test_cases.py
+│   └── update_cases_from_change.py
+└── templates/
+    └── base_payload.json
 ```
 
-## Best Fit
+## 首次生成流程 | First Generate Workflow
 
-适合以下场景：
-
-- 从 PRD 生成测试用例
-- 从截图或线框图生成测试用例
-- 导出分类测试用例到 Excel
-- 生成适合 Windows 交付流程复用的测试用例工作簿
-
-Use this skill when you want Codex to:
-
-- Generate test cases from a PRD
-- Generate test cases from screenshots or wireframes
-- Export categorized QA cases to Excel
-- Produce a reusable test case workbook for Windows-based delivery
-
-## Workflow
-
-1. 阅读输入内容，只提取有明确证据支持的信息。
+1. 读取输入，只提取有证据支持的信息。
 2. 先构建覆盖地图，再写详细用例。
-3. 生成高置信度测试用例。
-4. 如存在明确限制条件，按系统化边界值策略补充测试点。
-5. 将缺失或模糊需求标记为 `待确认项`。
-6. 导出为 `.xlsx`。
-   如未指定输出目录，则默认输出到当前工作目录。
+3. 使用 `templates/base_payload.json` 作为固定骨架。
+4. 导出 `.xlsx` 工作簿。
+5. 将 `payload.json` 与 workbook 一起保留在工作区。
 
 1. Read the input and identify only what is directly supported by the evidence.
 2. Build a coverage map before writing detailed rows.
-3. Generate high-confidence test cases.
-4. When explicit limits exist, cover boundary values systematically.
-5. Mark missing or ambiguous requirements as `待确认项`.
-6. Export the result to `.xlsx`.
-   If no output directory is provided, export to the current working directory.
+3. Fill `templates/base_payload.json`.
+4. Export the result to `.xlsx`.
+5. Keep the payload JSON beside the workbook.
 
-## Output Format
+## 增量修改流程 | Incremental Update Workflow
 
-默认工作簿使用中文 sheet 名和列名：
+1. 用户提供需求变更证据。
+2. 在工作区中定位最新的 workbook + payload JSON 基线对。
+3. 创建下一版 payload 修订文件。
+4. 基于 payload 里的 `_meta`、标题、步骤和预期结果命中受影响用例。
+5. 导出修订后的 workbook。
 
-- Sheets: `说明`, `功能用例`, `表单校验`, `边界值`, `异常场景`, `界面交互`, `权限安全`
-- Columns: `用例编号`, `模块`, `用例标题`, `前置条件`, `测试步骤`, `预期结果`, `优先级`, `类型`, `备注`
+1. The user provides requirement-change evidence.
+2. Locate the latest workbook + payload JSON pair in the workspace.
+3. Create the next payload revision.
+4. Match impacted cases from payload `_meta`, titles, steps, and expected results.
+5. Export the revised workbook.
 
-The default workbook uses Chinese sheet names and columns:
+## Payload 模板 | Payload Template
 
-- Sheets: `说明`, `功能用例`, `表单校验`, `边界值`, `异常场景`, `界面交互`, `权限安全`
-- Columns: `用例编号`, `模块`, `用例标题`, `前置条件`, `测试步骤`, `预期结果`, `优先级`, `类型`, `备注`
+skill 内置固定模板：
 
-你也可以通过 prompt 参数扩展额外分类或字段列。
+- `templates/base_payload.json`
 
-如果你希望把生成结果直接当执行单使用，建议通过 `extra_columns` 追加 `实际结果`、`执行人`、`执行日期`、`是否通过` 等字段，而不是直接修改默认列。
+这个模板用于稳定结构，减少每次重新组织 JSON schema 的成本。
 
-You can extend the workbook with additional categories or extra columns through prompt parameters.
+The skill includes a fixed template at:
 
-If you want an execution-ready workbook, add columns such as `实际结果`, `执行人`, `执行日期`, and `是否通过` through `extra_columns` instead of changing the default columns.
+- `templates/base_payload.json`
 
-## Install
+The template keeps the structure stable and reduces repeated schema reconstruction work.
 
-### 1. Place the skill in your Codex skills directory
+## 内部匹配元数据 | Internal Matching Metadata
 
-将本目录放到你的 Codex skills 路径下，例如：
+`payload.json` 中的单条用例可包含：
 
-Put this folder under your Codex skills path, for example:
+- `_meta.source_requirement`
+- `_meta.keywords`
 
-```text
-$CODEX_HOME/skills/test-case-xlsx-generator
-```
+这些字段用于后续需求变更时提高命中精度，但不会出现在导出的 workbook 中。
 
-如果没有设置 `CODEX_HOME`，常见默认目录是：
+Cases in the payload JSON may include:
 
-If `CODEX_HOME` is not set, a common default is:
+- `_meta.source_requirement`
+- `_meta.keywords`
 
-```text
-~/.codex/skills/test-case-xlsx-generator
-```
+These metadata fields help future updates locate impacted cases more accurately, but they do not appear in the exported workbook.
 
-### 2. Install Python dependency
-
-安装 Python 依赖：
+## 安装 | Install
 
 ```bash
 pip install -r requirements.txt
 ```
 
-如果不传 `output_dir`，生成的工作簿会默认保存在你运行命令时所在的当前目录。
+## 版本说明 | Version Notes
 
-If you do not pass `output_dir`, the generated workbook will be saved in the current working directory where the command runs.
+版本历史请参考 [版本介绍.md](./版本介绍.md)。
 
-## Example Prompt
-
-示例提示词：
-
-```text
-Use $test-case-xlsx-generator to generate categorized QA test cases from this PRD and these screenshots. Focus on login and password reset. Save the workbook to C:\Users\me\Documents\TestCases.
-```
-
-如果你想要更贴近团队执行习惯的模板示例，请参考 [examples/execution-template-example.md](./examples/execution-template-example.md)。
-
-If you want a more execution-oriented example, see [examples/execution-template-example.md](./examples/execution-template-example.md).
-
-## Export Script
-
-仓库内置 `scripts/export_test_cases.py`，用于将结构化 JSON 导出为 Excel 工作簿。
-
-The repository includes `scripts/export_test_cases.py` for exporting structured JSON into an Excel workbook.
-
-### Script Usage
-
-脚本用法：
-
-```bash
-python scripts/export_test_cases.py --input-json payload.json
-```
-
-```bash
-python scripts/export_test_cases.py --input-json payload.json --output-dir ./exports
-```
-
-### Expected Payload Shape
-
-JSON 载荷建议包含以下字段：
-
-- `system_name`
-- `module_name`
-- `input_summary`
-- `generated_at`
-- `output_format`
-- `uncertainties`
-- `extra_columns`
-- `categories`
-
-The JSON payload should include fields such as:
-
-- `system_name`
-- `module_name`
-- `input_summary`
-- `generated_at`
-- `output_format`
-- `uncertainties`
-- `extra_columns`
-- `categories`
-
-每个分类对象应包含：
-
-- `name`
-- `cases`
-
-Each category should contain:
-
-- `name`
-- `cases`
-
-每条用例应是一个以工作簿列名为 key 的 JSON 对象。
-
-Each case should be a JSON object keyed by workbook column name.
-
-完整结构请参考 [references/input-contract.md](./references/input-contract.md) 和 [references/workbook-schema.md](./references/workbook-schema.md)。
-
-See [references/input-contract.md](./references/input-contract.md) and [references/workbook-schema.md](./references/workbook-schema.md) for the full structure.
-
-## Design Principles
-
-- 优先基于证据生成用例，而不是做推测性覆盖
-- 对明确存在的边界规则，优先做系统化边界覆盖，而不是只补一个“异常值”
-- 让不确定信息可见，而不是隐藏起来
-- 保持流程稳定、可复用
-- 优先优化 Excel 交付效果，而不只是文本输出
-
-- Prefer evidence-based cases over speculative coverage
-- For explicit limit rules, prefer systematic boundary coverage instead of a single vague "invalid value" case
-- Make uncertainty visible instead of hiding it
-- Keep the workflow stable and reusable
-- Optimize for practical Excel delivery, not just raw text output
-
-## Notes
-
-- 当前版本虽然仍偏向中文 QA 交付结构，但默认输出路径已经改为当前工作目录，更适合开源共享。
-- 工作簿默认结构更适合中文 QA 交付场景。
-- 如果你想适配其他语言或企业模板，建议同时修改 `references/workbook-schema.md` 和导出脚本。
-
-- This version still favors Chinese QA deliverables, but the default export path now uses the current working directory for better open-source portability.
-- The workbook defaults are optimized for Chinese QA deliverables.
-- If you want to adapt the schema for another language or company template, update `references/workbook-schema.md` and the exporter script together.
+For release history, see [版本介绍.md](./版本介绍.md).
